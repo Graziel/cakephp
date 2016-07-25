@@ -30,6 +30,7 @@ trait DateFormatTrait
      * The default locale to be used for displaying formatted date strings.
      *
      * @var string
+     * @deprecated 3.2.9 Use static::setDefaultLocale() and static::getDefaultLocale() instead.
      */
     public static $defaultLocale;
 
@@ -59,9 +60,30 @@ trait DateFormatTrait
     /**
      * Caches whether or not this class is a subclass of a Date or MutableDate
      *
-     * @var boolean
+     * @var bool
      */
     protected static $_isDateInstance;
+
+    /**
+     * Gets the default locale.
+     *
+     * @return string|null The default locale string to be used or null.
+     */
+    public static function getDefaultLocale()
+    {
+        return static::$defaultLocale;
+    }
+
+    /**
+     * Sets the default locale.
+     *
+     * @param string|null $locale The default locale string to be used or null.
+     * @return void
+     */
+    public static function setDefaultLocale($locale = null)
+    {
+        static::$defaultLocale = $locale;
+    }
 
     /**
      * Returns a nicely formatted date string for this object.
@@ -143,6 +165,7 @@ trait DateFormatTrait
 
         $format = $format !== null ? $format : static::$_toStringFormat;
         $locale = $locale ?: static::$defaultLocale;
+
         return $this->_formatObject($time, $format, $locale);
     }
 
@@ -290,8 +313,10 @@ trait DateFormatTrait
         $time = $formatter->parse($time);
         if ($time !== false) {
             $result = new static('@' . $time);
+
             return static::$_isDateInstance ? $result : $result->setTimezone($defaultTimezone);
         }
+
         return null;
     }
 
@@ -323,6 +348,7 @@ trait DateFormatTrait
             $format = [$format, -1];
         }
         $format = $format ?: static::$wordFormat;
+
         return static::parseDateTime($date, $format);
     }
 
@@ -352,6 +378,7 @@ trait DateFormatTrait
             $format = [-1, $format];
         }
         $format = $format ?: [-1, IntlDateFormatter::SHORT];
+
         return static::parseDateTime($time, $format);
     }
 
@@ -378,9 +405,11 @@ trait DateFormatTrait
             if (static::$diffFormatter === null) {
                 static::$diffFormatter = new RelativeTimeFormatter();
             }
+
             return static::$diffFormatter;
         }
-        return static::$diffFormatter = $translator;
+
+        return static::$diffFormatter = $formatter;
     }
 
     /**

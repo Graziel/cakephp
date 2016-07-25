@@ -153,6 +153,10 @@ abstract class BaseAuthenticate implements EventListenerInterface
             $finder = key($finder);
         }
 
+        if (!isset($options['username'])) {
+            $options['username'] = $username;
+        }
+
         $query = $table->find($finder, $options);
 
         return $query;
@@ -172,6 +176,7 @@ abstract class BaseAuthenticate implements EventListenerInterface
         }
 
         $passwordHasher = $this->_config['passwordHasher'];
+
         return $this->_passwordHasher = PasswordHasherFactory::build($passwordHasher);
     }
 

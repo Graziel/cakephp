@@ -50,7 +50,10 @@ if (!function_exists('debug')) {
         $lineInfo = '';
         if ($showFrom) {
             $trace = Debugger::trace(['start' => 1, 'depth' => 2, 'format' => 'array']);
-            $search = [ROOT];
+            $search = [];
+            if (defined('ROOT')) {
+                $search = [ROOT];
+            }
             if (defined('CAKE_CORE_INCLUDE_PATH')) {
                 array_unshift($search, CAKE_CORE_INCLUDE_PATH);
             }
@@ -139,6 +142,7 @@ if (!function_exists('json_last_error_msg')) {
             JSON_ERROR_UTF8 => 'Malformed UTF-8 characters, possibly incorrectly encoded'
         ];
         $error = json_last_error();
+
         return array_key_exists($error, $errors) ? $errors[$error] : "Unknown error ({$error})";
     }
 

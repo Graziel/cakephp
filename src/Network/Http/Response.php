@@ -258,6 +258,7 @@ class Response extends Message
             static::STATUS_CREATED,
             static::STATUS_ACCEPTED
         ];
+
         return in_array($this->_code, $codes);
     }
 
@@ -274,6 +275,7 @@ class Response extends Message
             static::STATUS_SEE_OTHER,
             static::STATUS_TEMPORARY_REDIRECT,
         ];
+
         return (
             in_array($this->_code, $codes) &&
             $this->header('Location')
@@ -305,6 +307,7 @@ class Response extends Message
         if (empty($matches[1])) {
             return null;
         }
+
         return $matches[1];
     }
 
@@ -327,6 +330,7 @@ class Response extends Message
         if (!isset($this->_headers[$name])) {
             return null;
         }
+
         return $this->_headers[$name];
     }
 
@@ -350,6 +354,7 @@ class Response extends Message
         if ($all) {
             return $this->_cookies[$name];
         }
+
         return $this->_cookies[$name]['value'];
     }
 
@@ -374,25 +379,22 @@ class Response extends Message
         if ($parser) {
             return $parser($this->_body);
         }
+
         return $this->_body;
     }
 
     /**
      * Get the response body as JSON decoded data.
      *
-     * @return null|array
+     * @return mixed
      */
     protected function _getJson()
     {
         if (!empty($this->_json)) {
             return $this->_json;
         }
-        $data = json_decode($this->_body, true);
-        if ($data) {
-            $this->_json = $data;
-            return $this->_json;
-        }
-        return null;
+
+        return $this->_json = json_decode($this->_body, true);
     }
 
     /**
@@ -409,8 +411,10 @@ class Response extends Message
         $data = simplexml_load_string($this->_body);
         if ($data) {
             $this->_xml = $data;
+
             return $this->_xml;
         }
+
         return null;
     }
 
@@ -429,6 +433,7 @@ class Response extends Message
         if (substr($key, 0, 4) === '_get') {
             return $this->{$key}();
         }
+
         return $this->{$key};
     }
 
@@ -446,8 +451,10 @@ class Response extends Message
         $key = $this->_exposedProperties[$name];
         if (substr($key, 0, 4) === '_get') {
             $val = $this->{$key}();
+
             return $val !== null;
         }
+
         return isset($this->$key);
     }
 }

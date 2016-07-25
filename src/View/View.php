@@ -530,6 +530,7 @@ class View implements EventDispatcherInterface
         $result = ob_get_clean();
 
         Cache::write($options['key'], $result, $options['config']);
+
         return $result;
     }
 
@@ -596,6 +597,7 @@ class View implements EventDispatcherInterface
         }
 
         $this->hasRendered = true;
+
         return $this->Blocks->get('content');
     }
 
@@ -633,6 +635,7 @@ class View implements EventDispatcherInterface
         $this->Blocks->set('content', $this->_render($layoutFileName));
 
         $this->dispatchEvent('View.afterLayout', [$layoutFileName]);
+
         return $this->Blocks->get('content');
     }
 
@@ -658,6 +661,7 @@ class View implements EventDispatcherInterface
         if (!isset($this->viewVars[$var])) {
             return $default;
         }
+
         return $this->viewVars[$var];
     }
 
@@ -707,7 +711,8 @@ class View implements EventDispatcherInterface
      * Appending to a new block will create the block.
      *
      * @param string $name Name of the block
-     * @param mixed $value The content for the block.
+     * @param mixed $value The content for the block. Value will be type cast
+     *   to string.
      * @return void
      * @see \Cake\View\ViewBlock::concat()
      */
@@ -722,7 +727,8 @@ class View implements EventDispatcherInterface
      * Prepending to a new block will create the block.
      *
      * @param string $name Name of the block
-     * @param mixed $value The content for the block.
+     * @param mixed $value The content for the block. Value will be type cast
+     *   to string.
      * @return void
      * @see \Cake\View\ViewBlock::concat()
      */
@@ -736,7 +742,8 @@ class View implements EventDispatcherInterface
      * existing content.
      *
      * @param string $name Name of the block
-     * @param mixed $value The content for the block.
+     * @param mixed $value The content for the block. Value will be type cast
+     *   to string.
      * @return void
      * @see \Cake\View\ViewBlock::set()
      */
@@ -764,7 +771,7 @@ class View implements EventDispatcherInterface
      *
      * @param string $name Name of the block
      * @param string $default Default text
-     * @return string default The block content or $default if the block does not exist.
+     * @return string The block content or $default if the block does not exist.
      * @see \Cake\View\ViewBlock::get()
      */
     public function fetch($name, $default = '')
@@ -856,6 +863,7 @@ class View implements EventDispatcherInterface
             $c++;
         }
         $this->uuids[] = $hash;
+
         return $hash;
     }
 
@@ -887,8 +895,10 @@ class View implements EventDispatcherInterface
         $registry = $this->helpers();
         if (isset($registry->{$name})) {
             $this->{$name} = $registry->{$name};
+
             return $registry->{$name};
         }
+
         return $this->{$name};
     }
 
@@ -903,10 +913,12 @@ class View implements EventDispatcherInterface
     {
         if ($name === 'view') {
             $this->template = $value;
+
             return;
         }
         if ($name === 'viewPath') {
             $this->templatePath = $value;
+
             return;
         }
 
@@ -972,6 +984,7 @@ class View implements EventDispatcherInterface
                 $this->Blocks->active()
             ));
         }
+
         return $content;
     }
 
@@ -992,6 +1005,7 @@ class View implements EventDispatcherInterface
         include $this->__viewFile;
 
         unset($this->__viewFile);
+
         return ob_get_clean();
     }
 
@@ -1005,6 +1019,7 @@ class View implements EventDispatcherInterface
         if ($this->_helpers === null) {
             $this->_helpers = new HelperRegistry($this);
         }
+
         return $this->_helpers;
     }
 
@@ -1020,6 +1035,7 @@ class View implements EventDispatcherInterface
     {
         list(, $class) = pluginSplit($name);
         $helpers = $this->helpers();
+
         return $this->{$class} = $helpers->load($name, $config);
     }
 
@@ -1106,6 +1122,7 @@ class View implements EventDispatcherInterface
                 $file
             ));
         }
+
         return $absolute;
     }
 
@@ -1129,6 +1146,7 @@ class View implements EventDispatcherInterface
         if (isset($this->plugin) && !$plugin && $fallback) {
             $plugin = $this->plugin;
         }
+
         return [$plugin, $name];
     }
 
@@ -1186,6 +1204,7 @@ class View implements EventDispatcherInterface
                 }
             }
         }
+
         return false;
     }
 
@@ -1265,6 +1284,7 @@ class View implements EventDispatcherInterface
         if ($plugin !== null) {
             return $this->_pathsForPlugin[$plugin] = $paths;
         }
+
         return $this->_paths = $paths;
     }
 
@@ -1302,6 +1322,7 @@ class View implements EventDispatcherInterface
             $config = $options['cache'] + $defaults;
         }
         $config['key'] = 'element_' . $config['key'];
+
         return $config;
     }
 

@@ -79,6 +79,7 @@ class Marshaller
                 $map[$assoc->property()] = ['association' => $assoc] + $nested + ['associated' => []];
             }
         }
+
         return $map;
     }
 
@@ -119,7 +120,7 @@ class Marshaller
         $propertyMap = $this->_buildPropertyMap($options);
 
         $schema = $this->_table->schema();
-        $primaryKey = $schema->primaryKey();
+        $primaryKey = (array)$this->_table->primaryKey();
         $entityClass = $this->_table->entityClass();
         $entity = new $entityClass();
         $entity->source($this->_table->registryAlias());
@@ -161,6 +162,7 @@ class Marshaller
         if (!isset($options['fieldList'])) {
             $entity->set($properties);
             $entity->errors($errors);
+
             return $entity;
         }
 
@@ -171,6 +173,7 @@ class Marshaller
         }
 
         $entity->errors($errors);
+
         return $entity;
     }
 
@@ -216,7 +219,8 @@ class Marshaller
 
         $tableName = $this->_table->alias();
         if (isset($data[$tableName])) {
-            $data = $data[$tableName];
+            $data += $data[$tableName];
+            unset($data[$tableName]);
         }
 
         $data = new ArrayObject($data);
@@ -259,6 +263,7 @@ class Marshaller
         if ($assoc->type() === Association::MANY_TO_MANY) {
             return $marshaller->_belongsToMany($assoc, $value, (array)$options);
         }
+
         return $marshaller->many($value, (array)$options);
     }
 
@@ -291,6 +296,7 @@ class Marshaller
             }
             $output[] = $this->one($record, $options);
         }
+
         return $output;
     }
 
@@ -313,7 +319,7 @@ class Marshaller
         $data = array_values($data);
 
         $target = $assoc->target();
-        $primaryKey = array_flip($target->schema()->primaryKey());
+        $primaryKey = array_flip((array)$target->primaryKey());
         $records = $conditions = [];
         $primaryCount = count($primaryKey);
         $conditions = [];
@@ -385,6 +391,7 @@ class Marshaller
                 $record->set('_joinData', $joinData);
             }
         }
+
         return $records;
     }
 
@@ -526,6 +533,7 @@ class Marshaller
                     $entity->dirty($field, $properties[$field]->dirty());
                 }
             }
+
             return $entity;
         }
 
@@ -539,6 +547,7 @@ class Marshaller
         }
 
         $entity->errors($errors);
+
         return $entity;
     }
 
@@ -582,6 +591,7 @@ class Marshaller
                 foreach ($primary as $key) {
                     $keys[] = isset($el[$key]) ? $el[$key] : '';
                 }
+
                 return implode(';', $keys);
             })
             ->map(function ($element, $key) {
@@ -616,6 +626,7 @@ class Marshaller
             })
             ->reduce(function ($query, $keys) use ($primary) {
                 $fields = array_map([$this->_table, 'aliasField'], $primary);
+
                 return $query->orWhere($query->newExpr()->and_(array_combine($fields, $keys)));
             }, $this->_table->find());
 
@@ -663,6 +674,7 @@ class Marshaller
         if ($assoc->type() === Association::MANY_TO_MANY) {
             return $marshaller->_mergeBelongsToMany($original, $assoc, $value, (array)$options);
         }
+
         return $marshaller->mergeMany($original, $value, (array)$options);
     }
 

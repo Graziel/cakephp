@@ -104,7 +104,17 @@ class Security
             return random_bytes($length);
         }
         if (function_exists('openssl_random_pseudo_bytes')) {
-            return openssl_random_pseudo_bytes($length);
+            $bytes = openssl_random_pseudo_bytes($length, $strongSource);
+            if (!$strongSource) {
+                trigger_error(
+                    'openssl was unable to use a strong source of entropy. ' .
+                    'Consider updating your system libraries, or ensuring ' .
+                    'you have more available entropy.',
+                    E_USER_WARNING
+                );
+            }
+
+            return $bytes;
         }
         trigger_error(
             'You do not have a safe source of random data available. ' .
@@ -112,11 +122,30 @@ class Security
             'Falling back to an insecure random source.',
             E_USER_WARNING
         );
+
+        return static::insecureRandomBytes($length);
+    }
+
+    /**
+     * Like randomBytes() above, but not cryptographically secure.
+     *
+     * @param int $length The number of bytes you want.
+     * @return string Random bytes in binary.
+     * @see \Cake\Utility\Security::randomBytes()
+     */
+    public static function insecureRandomBytes($length)
+    {
+        $length *= 2;
+
         $bytes = '';
-        while ($bytes < $length) {
+        $byteLength = 0;
+        while ($byteLength < $length) {
             $bytes .= static::hash(Text::uuid() . uniqid(mt_rand(), true), 'sha512', true);
+            $byteLength = strlen($bytes);
         }
-        return substr($bytes, 0, $length);
+        $bytes = substr($bytes, 0, $length);
+
+        return pack('H*', $bytes);
     }
 
     /**
@@ -170,6 +199,7 @@ class Security
             throw new InvalidArgumentException('You must use a key larger than 32 bytes for Security::rijndael()');
         }
         $crypto = static::engine();
+
         return $crypto->rijndael($text, $key, $operation);
     }
 
@@ -199,6 +229,7 @@ class Security
         $crypto = static::engine();
         $ciphertext = $crypto->encrypt($plain, $key);
         $hmac = hash_hmac('sha256', $ciphertext, $key);
+
         return $hmac . $ciphertext;
     }
 
@@ -252,6 +283,7 @@ class Security
         }
 
         $crypto = static::engine();
+
         return $crypto->decrypt($cipher, $key);
     }
 
@@ -277,6 +309,7 @@ class Security
         for ($i = 0; $i < $hashLength; $i++) {
             $result |= (ord($hmac[$i]) ^ ord($compare[$i]));
         }
+
         return $result === 0;
     }
 
@@ -292,6 +325,7 @@ class Security
         if ($salt === null) {
             return static::$_salt;
         }
+
         return static::$_salt = (string)$salt;
     }
 }

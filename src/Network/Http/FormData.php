@@ -14,6 +14,7 @@
 namespace Cake\Network\Http;
 
 use Cake\Network\Http\FormData\Part;
+use Cake\Utility\Security;
 use Countable;
 use finfo;
 
@@ -66,7 +67,8 @@ class FormData implements Countable
         if ($this->_boundary) {
             return $this->_boundary;
         }
-        $this->_boundary = md5(uniqid(time()));
+        $this->_boundary = md5(Security::randomBytes(16));
+
         return $this->_boundary;
     }
 
@@ -115,6 +117,7 @@ class FormData implements Countable
         } else {
             $this->_parts[] = $this->newPart($name, $value);
         }
+
         return $this;
     }
 
@@ -131,6 +134,7 @@ class FormData implements Countable
         foreach ($data as $name => $value) {
             $this->add($name, $value);
         }
+
         return $this;
     }
 
@@ -168,6 +172,7 @@ class FormData implements Countable
         if ($filename) {
             $part->filename($filename);
         }
+
         return $part;
     }
 
@@ -234,6 +239,7 @@ class FormData implements Countable
         if (!$this->isMultipart()) {
             return 'application/x-www-form-urlencoded';
         }
+
         return 'multipart/form-data; boundary="' . $this->boundary() . '"';
     }
 
@@ -254,12 +260,14 @@ class FormData implements Countable
                 $out .= "\r\n";
             }
             $out .= "--$boundary--\r\n\r\n";
+
             return $out;
         }
         $data = [];
         foreach ($this->_parts as $part) {
             $data[$part->name()] = $part->value();
         }
+
         return http_build_query($data);
     }
 }

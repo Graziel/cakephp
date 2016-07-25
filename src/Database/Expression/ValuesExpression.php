@@ -85,6 +85,7 @@ class ValuesExpression implements ExpressionInterface
         }
         if ($data instanceof Query) {
             $this->query($data);
+
             return;
         }
         $this->_values[] = $data;
@@ -103,6 +104,7 @@ class ValuesExpression implements ExpressionInterface
             return $this->_columns;
         }
         $this->_columns = $cols;
+
         return $this;
     }
 
@@ -119,6 +121,7 @@ class ValuesExpression implements ExpressionInterface
             return $this->_values;
         }
         $this->_values = $values;
+
         return $this;
     }
 
@@ -151,7 +154,13 @@ class ValuesExpression implements ExpressionInterface
         }
 
         $i = 0;
-        $defaults = array_fill_keys($this->_columns, null);
+        $columns = [];
+
+        // Remove identifier quoting so column names match keys.
+        foreach ($this->_columns as $col) {
+            $columns[] = trim($col, '`[]"');
+        }
+        $defaults = array_fill_keys($columns, null);
         $placeholders = [];
 
         foreach ($this->_values as $row) {

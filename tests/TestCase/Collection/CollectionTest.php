@@ -82,7 +82,9 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a');
@@ -118,7 +120,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->once())
             ->method('__invoke')
             ->with(3, 'c');
@@ -141,6 +146,7 @@ class CollectionTest extends TestCase
         $collection = new Collection($items);
         $result = $collection->reject(function ($v, $k, $items) use ($collection) {
             $this->assertSame($collection->getInnerIterator(), $items);
+
             return $v > 2;
         });
         $this->assertEquals(['a' => 1, 'b' => 2], iterator_to_array($result));
@@ -156,7 +162,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a')
@@ -181,7 +190,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a')
@@ -191,6 +203,16 @@ class CollectionTest extends TestCase
             ->with(2, 'b')
             ->will($this->returnValue(false));
         $callable->expects($this->exactly(2))->method('__invoke');
+        $this->assertFalse($collection->every($callable));
+
+        $items = [];
+        $collection = new Collection($items);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
+        $callable->expects($this->never())
+            ->method('__invoke');
         $this->assertFalse($collection->every($callable));
     }
 
@@ -203,7 +225,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a')
@@ -225,7 +250,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a')
@@ -267,6 +295,7 @@ class CollectionTest extends TestCase
         $collection = new Collection($items);
         $map = $collection->map(function ($v, $k, $it) use ($collection) {
             $this->assertSame($collection->getInnerIterator(), $it);
+
             return $v * $v;
         });
         $this->assertInstanceOf('Cake\Collection\Iterator\ReplaceIterator', $map);
@@ -282,7 +311,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(10, 1, 'a')
@@ -307,7 +339,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 2, 'b')
@@ -752,7 +787,10 @@ class CollectionTest extends TestCase
     {
         $items = ['a' => 1, 'b' => 2, 'c' => 3];
         $collection = new Collection($items);
-        $callable = $this->getMock('stdClass', ['__invoke']);
+        $callable = $this->getMockBuilder(\StdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
+
         $callable->expects($this->at(0))
             ->method('__invoke')
             ->with(1, 'a')
@@ -1211,6 +1249,7 @@ class CollectionTest extends TestCase
         $items = [1, 2, 3];
         $collection = (new Collection($items))->through(function ($collection) {
             $list = $collection->toList();
+
             return array_merge($list, $list);
         });
 

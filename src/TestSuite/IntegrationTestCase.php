@@ -239,6 +239,7 @@ abstract class IntegrationTestCase extends TestCase
         if (isset($this->_cookieEncriptionKey)) {
             return $this->_cookieEncriptionKey;
         }
+
         return Security::salt();
     }
 
@@ -434,10 +435,15 @@ abstract class IntegrationTestCase extends TestCase
         $session = Session::create($sessionConfig);
         $session->write($this->_session);
         list ($url, $query) = $this->_url($url);
+        $tokenUrl = $url;
+
+        if ($query) {
+            $tokenUrl .= '?' . http_build_query($query);
+        }
 
         $props = [
             'url' => $url,
-            'post' => $this->_addTokens($url, $data),
+            'post' => $this->_addTokens($tokenUrl, $data),
             'cookies' => $this->_cookie,
             'session' => $session,
             'query' => $query
@@ -448,13 +454,18 @@ abstract class IntegrationTestCase extends TestCase
         $env = [];
         if (isset($this->_request['headers'])) {
             foreach ($this->_request['headers'] as $k => $v) {
-                $env['HTTP_' . str_replace('-', '_', strtoupper($k))] = $v;
+                $name = strtoupper(str_replace('-', '_', $k));
+                if (!in_array($name, ['CONTENT_LENGTH', 'CONTENT_TYPE'])) {
+                    $name = 'HTTP_' . $name;
+                }
+                $env[$name] = $v;
             }
             unset($this->_request['headers']);
         }
         $env['REQUEST_METHOD'] = $method;
         $props['environment'] = $env;
         $props = Hash::merge($props, $this->_request);
+
         return new Request($props);
     }
 
@@ -484,6 +495,7 @@ abstract class IntegrationTestCase extends TestCase
                 $data['_csrfToken'] = $this->_cookie['csrfToken'];
             }
         }
+
         return $data;
     }
 
@@ -522,6 +534,7 @@ abstract class IntegrationTestCase extends TestCase
         if (isset($this->_controller->viewVars[$name])) {
             return $this->_controller->viewVars[$name];
         }
+
         return null;
     }
 
@@ -617,6 +630,7 @@ abstract class IntegrationTestCase extends TestCase
         $result = $this->_response->header();
         if ($url === null) {
             $this->assertTrue(!empty($result['Location']), $message);
+
             return;
         }
         if (empty($result['Location'])) {

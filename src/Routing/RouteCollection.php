@@ -129,6 +129,7 @@ class RouteCollection
                 if ($queryParameters) {
                     $r['?'] = $queryParameters;
                 }
+
                 return $r;
             }
         }
@@ -237,9 +238,14 @@ class RouteCollection
             if (isset($this->_named[$name])) {
                 $route = $this->_named[$name];
                 $out = $route->match($url + $route->defaults, $context);
-            }
-            if ($out) {
-                return $out;
+                if ($out) {
+                    return $out;
+                }
+                throw new MissingRouteException([
+                    'url' => $name,
+                    'context' => $context,
+                    'message' => 'A named route was found for "%s", but matching failed.',
+                ]);
             }
             throw new MissingRouteException(['url' => $name, 'context' => $context]);
         }

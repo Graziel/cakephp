@@ -14,6 +14,7 @@
  */
 namespace Cake\ORM;
 
+use Cake\Collection\Collection;
 use Cake\Core\ConventionsTrait;
 use Cake\Database\Expression\IdentifierExpression;
 use Cake\Datasource\EntityInterface;
@@ -133,7 +134,7 @@ abstract class Association
     /**
      * Whether or not cascaded deletes should also fire callbacks.
      *
-     * @var string
+     * @var bool
      */
     protected $_cascadeCallbacks = false;
 
@@ -243,6 +244,7 @@ abstract class Association
         if ($name !== null) {
             $this->_name = $name;
         }
+
         return $this->_name;
     }
 
@@ -258,6 +260,7 @@ abstract class Association
         if ($cascadeCallbacks !== null) {
             $this->_cascadeCallbacks = $cascadeCallbacks;
         }
+
         return $this->_cascadeCallbacks;
     }
 
@@ -283,6 +286,7 @@ abstract class Association
         if ($table === null) {
             return $this->_sourceTable;
         }
+
         return $this->_sourceTable = $table;
     }
 
@@ -334,6 +338,7 @@ abstract class Association
         if ($conditions !== null) {
             $this->_conditions = $conditions;
         }
+
         return $this->_conditions;
     }
 
@@ -373,6 +378,7 @@ abstract class Association
         if ($key !== null) {
             $this->_foreignKey = $key;
         }
+
         return $this->_foreignKey;
     }
 
@@ -392,6 +398,7 @@ abstract class Association
         if ($dependent !== null) {
             $this->_dependent = $dependent;
         }
+
         return $this->_dependent;
     }
 
@@ -404,6 +411,7 @@ abstract class Association
     public function canBeJoined(array $options = [])
     {
         $strategy = isset($options['strategy']) ? $options['strategy'] : $this->strategy();
+
         return $strategy == $this::STRATEGY_JOIN;
     }
 
@@ -419,6 +427,7 @@ abstract class Association
         if ($type === null) {
             return $this->_joinType;
         }
+
         return $this->_joinType = $type;
     }
 
@@ -446,6 +455,7 @@ abstract class Association
                 );
             }
         }
+
         return $this->_propertyName;
     }
 
@@ -457,6 +467,7 @@ abstract class Association
     protected function _propertyName()
     {
         list(, $name) = pluginSplit($this->_name);
+
         return Inflector::underscore($name);
     }
 
@@ -480,6 +491,7 @@ abstract class Association
             }
             $this->_strategy = $name;
         }
+
         return $this->_strategy;
     }
 
@@ -496,6 +508,7 @@ abstract class Association
         if ($finder !== null) {
             $this->_finder = $finder;
         }
+
         return $this->_finder;
     }
 
@@ -602,6 +615,7 @@ abstract class Association
             $primaryKey = $query->aliasFields((array)$target->primaryKey(), $this->_name);
             $query->andWhere(function ($exp) use ($primaryKey) {
                 array_map([$exp, 'isNull'], $primaryKey);
+
                 return $exp;
             });
         }
@@ -626,6 +640,7 @@ abstract class Association
             $row[$sourceAlias][$this->property()] = $row[$nestKey];
             unset($row[$nestKey]);
         }
+
         return $row;
     }
 
@@ -645,6 +660,7 @@ abstract class Association
         if (isset($row[$sourceAlias])) {
             $row[$sourceAlias][$this->property()] = null;
         }
+
         return $row;
     }
 
@@ -663,6 +679,7 @@ abstract class Association
     {
         $type = $type ?: $this->finder();
         list($type, $opts) = $this->_extractFinder($type);
+
         return $this->target()
             ->find($type, $options + $opts)
             ->where($this->conditions());
@@ -684,6 +701,7 @@ abstract class Association
             ->where($this->conditions())
             ->where($conditions)
             ->clause('where');
+
         return $target->updateAll($fields, $expression);
     }
 
@@ -702,6 +720,7 @@ abstract class Association
             ->where($this->conditions())
             ->where($conditions)
             ->clause('where');
+
         return $target->deleteAll($expression);
     }
 
@@ -774,11 +793,24 @@ abstract class Association
         }
 
         $property = $options['propertyPath'];
-        $query->formatResults(function ($results) use ($formatters, $property) {
-            $extracted = $results->extract($property)->compile();
+        $propertyPath = explode('.', $property);
+        $query->formatResults(function ($results) use ($formatters, $property, $propertyPath) {
+            $extracted = [];
+            foreach ($results as $result) {
+                foreach ($propertyPath as $propertyPathItem) {
+                    if (!isset($result[$propertyPathItem])) {
+                        $result = null;
+                        break;
+                    }
+                    $result = $result[$propertyPathItem];
+                }
+                $extracted[] = $result;
+            }
+            $extracted = new Collection($extracted);
             foreach ($formatters as $callable) {
                 $extracted = new ResultSetDecorator($callable($extracted));
             }
+
             return $results->insert($property, $extracted);
         }, Query::PREPEND);
     }
@@ -841,6 +873,11 @@ abstract class Association
         $bindingKey = (array)$this->bindingKey();
 
         if (count($foreignKey) !== count($bindingKey)) {
+            if (empty($bindingKey)) {
+                $msg = 'The "%s" table does not define a primary key. Please set one.';
+                throw new RuntimeException(sprintf($msg, $this->target()->table()));
+            }
+
             $msg = 'Cannot match provided foreignKey for "%s", got "(%s)" but expected foreign key for "(%s)"';
             throw new RuntimeException(sprintf(
                 $msg,

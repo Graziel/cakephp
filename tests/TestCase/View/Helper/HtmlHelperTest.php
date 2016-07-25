@@ -58,7 +58,9 @@ class HtmlHelperTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->View = $this->getMock('Cake\View\View', ['append']);
+        $this->View = $this->getMockBuilder('Cake\View\View')
+            ->setMethods(['append'])
+            ->getMock();
         $this->Html = new HtmlHelper($this->View);
         $this->Html->request = new Request();
         $this->Html->request->webroot = '';
@@ -333,6 +335,10 @@ class HtmlHelperTest extends TestCase
 
         $result = $this->Html->image('/test/view/1.gif');
         $expected = ['img' => ['src' => '/test/view/1.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->image('cid:cakephp_logo');
+        $expected = ['img' => ['src' => 'cid:cakephp_logo', 'alt' => '']];
         $this->assertHtml($expected, $result);
     }
 
@@ -1280,6 +1286,11 @@ class HtmlHelperTest extends TestCase
         ];
         $this->assertHtml($expected, $result);
 
+        $this->Html->addCrumb('Fifth', [
+            'plugin' => false,
+            'controller' => 'controller',
+            'action' => 'action',
+        ]);
         $result = $this->Html->getCrumbs('-', 'Start');
         $expected = [
             ['a' => ['href' => '/']],
@@ -1298,7 +1309,11 @@ class HtmlHelperTest extends TestCase
             'Third',
             '/a',
             '-',
-            'Fourth'
+            'Fourth',
+            '-',
+            ['a' => ['href' => '/controller/action']],
+            'Fifth',
+            '/a',
         ];
         $this->assertHtml($expected, $result);
     }

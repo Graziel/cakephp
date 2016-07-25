@@ -19,7 +19,6 @@ use Cake\Controller\Controller;
 use Cake\Controller\Exception\SecurityException;
 use Cake\Core\Configure;
 use Cake\Event\Event;
-use Cake\Network\Exception\BadRequestException;
 use Cake\Network\Request;
 use Cake\Network\Session;
 use Cake\TestSuite\TestCase;
@@ -153,7 +152,10 @@ class SecurityComponentTest extends TestCase
         parent::setUp();
 
         $session = new Session();
-        $request = $this->getMock('Cake\Network\Request', ['here'], ['posts/index']);
+        $request = $this->getMockBuilder('Cake\Network\Request')
+            ->setMethods(['here'])
+            ->setConstructorArgs(['posts/index'])
+            ->getMock();
         $request->addParams(['controller' => 'posts', 'action' => 'index']);
         $request->session($session);
         $request->expects($this->any())
@@ -189,6 +191,7 @@ class SecurityComponentTest extends TestCase
         } catch (SecurityException $ex) {
             $this->assertInstanceOf('Cake\\Controller\\Exception\\' . $expectedException, $ex);
             $this->assertEquals($expectedExceptionMessage, $ex->getMessage());
+
             return false;
         }
     }
@@ -1303,7 +1306,9 @@ class SecurityComponentTest extends TestCase
         ];
         $this->assertTrue($this->validatePost());
 
-        $request = $this->getMock('Cake\Network\Request', ['here']);
+        $request = $this->getMockBuilder('Cake\Network\Request')
+            ->setMethods(['here'])
+            ->getMock();
         $request->expects($this->at(0))
             ->method('here')
             ->will($this->returnValue('/posts/index?page=1'));

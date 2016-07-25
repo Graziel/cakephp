@@ -50,6 +50,7 @@ trait CollectionTrait
         foreach ($this->unwrap() as $k => $v) {
             $c($v, $k);
         }
+
         return $this;
     }
 
@@ -65,6 +66,7 @@ trait CollectionTrait
                 return (bool)$v;
             };
         }
+
         return new FilterIterator($this->unwrap(), $c);
     }
 
@@ -86,12 +88,15 @@ trait CollectionTrait
      */
     public function every(callable $c)
     {
+        $return = false;
         foreach ($this->unwrap() as $key => $value) {
+            $return = true;
             if (!$c($value, $key)) {
                 return false;
             }
         }
-        return true;
+
+        return $return;
     }
 
     /**
@@ -105,6 +110,7 @@ trait CollectionTrait
                 return true;
             }
         }
+
         return false;
     }
 
@@ -119,6 +125,7 @@ trait CollectionTrait
                 return true;
             }
         }
+
         return false;
     }
 
@@ -152,6 +159,7 @@ trait CollectionTrait
             }
             $result = $c($result, $value, $k);
         }
+
         return $result;
     }
 
@@ -211,6 +219,7 @@ trait CollectionTrait
         foreach ($this as $value) {
             $group[$callback($value)][] = $value;
         }
+
         return new Collection($group);
     }
 
@@ -225,6 +234,7 @@ trait CollectionTrait
         foreach ($this as $value) {
             $group[$callback($value)] = $value;
         }
+
         return new Collection($group);
     }
 
@@ -243,6 +253,7 @@ trait CollectionTrait
         $reducer = function ($values, $key, $mr) {
             $mr->emit(count($values), $key);
         };
+
         return new Collection(new MapReduce($this->unwrap(), $mapper, $reducer));
     }
 
@@ -273,6 +284,7 @@ trait CollectionTrait
     {
         $elements = $this->toArray();
         shuffle($elements);
+
         return new Collection($elements);
     }
 
@@ -361,6 +373,7 @@ trait CollectionTrait
         $list = new AppendIterator;
         $list->append($this->unwrap());
         $list->append((new Collection($items))->unwrap());
+
         return new Collection($list);
     }
 
@@ -382,6 +395,7 @@ trait CollectionTrait
 
             if (!($options['groupPath'])) {
                 $mapReduce->emit($rowVal($value, $key), $rowKey($value, $key));
+
                 return null;
             }
 
@@ -433,6 +447,7 @@ trait CollectionTrait
                     $parents[$id] = $isObject ? $parents[$id] : new ArrayIterator($parents[$id], 1);
                     $mapReduce->emit($parents[$id]);
                 }
+
                 return null;
             }
 
@@ -468,6 +483,7 @@ trait CollectionTrait
         $iterator = $this->unwrap();
         if ($iterator instanceof ArrayIterator) {
             $items = $iterator->getArrayCopy();
+
             return $preserveKeys ? $items : array_values($items);
         }
         // RecursiveIteratorIterator can return duplicate key values causing
@@ -475,6 +491,7 @@ trait CollectionTrait
         if ($preserveKeys && get_class($iterator) === 'RecursiveIteratorIterator') {
             $preserveKeys = false;
         }
+
         return iterator_to_array($this, $preserveKeys);
     }
 
@@ -528,6 +545,7 @@ trait CollectionTrait
             'asc' => TreeIterator::CHILD_FIRST,
             'leaves' => TreeIterator::LEAVES_ONLY
         ];
+
         return new TreeIterator(
             new NestIterator($this, $nestingKey),
             isset($modes[$dir]) ? $modes[$dir] : $dir
@@ -544,6 +562,7 @@ trait CollectionTrait
         if (!is_callable($condition)) {
             $condition = $this->_createMatcherFilter($condition);
         }
+
         return new StoppableIterator($this, $condition);
     }
 
@@ -574,7 +593,8 @@ trait CollectionTrait
     public function through(callable $handler)
     {
         $result = $handler($this);
-        return $result instanceof CollectionInterface ? $result: new Collection($result);
+
+        return $result instanceof CollectionInterface ? $result : new Collection($result);
     }
 
     /**
@@ -598,6 +618,7 @@ trait CollectionTrait
         } else {
             $items = [$items];
         }
+
         return new ZipIterator(array_merge([$this], $items), $callable);
     }
 
@@ -630,6 +651,7 @@ trait CollectionTrait
         foreach ($this->unwrap() as $el) {
             return false;
         }
+
         return true;
     }
 
@@ -643,6 +665,7 @@ trait CollectionTrait
         while (get_class($iterator) === 'Cake\Collection\Collection') {
             $iterator = $iterator->getInnerIterator();
         }
+
         return $iterator;
     }
 
